@@ -2,9 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "BL_C_Character.generated.h"
 
+class UInputComponent;
 class UCameraComponent;
+
 UCLASS()
 class BLOCKS_API ABL_C_Character : public ACharacter
 {
@@ -16,14 +19,35 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* LookAction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Camera, meta = (AllowPrivateAccess="true"))
 	UCameraComponent* BL_CameraComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	USkeletalMeshComponent* BL_FirstPersonMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess="true"))
+	class UInputMappingContext* DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* MoveAction;
+
+protected:
+	void Move(const FInputActionValue& Value);
+
+	void Look(const FInputActionValue& Value);
+	
 public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	USkeletalMeshComponent* GetBL_FirstPersonMesh() const { return BL_FirstPersonMesh; }
+
+	UCameraComponent* GetBL_CameraComponent() const { return BL_CameraComponent; }
 };
