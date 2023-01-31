@@ -78,16 +78,7 @@ void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 		if (CreateBlock(HitResult))
 		{
-			if (HitResult.bBlockingHit)
-			{
-				M_CurrentBlock->SetActorLocation(HitResult.Location);
-			}
-			else
-			{
-				FVector StartLoc(ForceInitToZero), EndLoc(ForceInitToZero);
-				CalculateStartEndLocation(WithoutHitDistance, StartLoc, EndLoc);
-				M_CurrentBlock->SetActorLocation(EndLoc);
-			}
+			SetBlockLocation(HitResult);
 		}
 	}
 }
@@ -126,4 +117,34 @@ void UBL_C_BuildingComponent::CalculateStartEndLocation(float Distance, FVector&
 {
 	StartLoc = M_Owner->BL_LightSphere->GetComponentLocation();
 	EndLoc = StartLoc + M_Owner->FindComponentByClass<UCameraComponent>()->GetForwardVector() * Distance;
+}
+
+void UBL_C_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
+{
+	if (HitResult.bBlockingHit)
+	{
+		M_CurrentBlock->SetActorLocation(HitResult.Location.GridSnap(50.0f) + HitResult.Normal * 50.0f);
+
+		const TArray<AActor*> IgnoredBlocks = {M_Owner, M_CurrentBlock};
+		TArray<FHitResult> BoxHits;
+		
+		UKismetSystemLibrary::BoxTraceMulti(GetWorld(),
+			M_CurrentBlock->GetActorLocation(),
+			M_CurrentBlock->GetActorLocation(),
+			FVector(50.0f),
+			FRotator::ZeroRotator,
+			TraceTypeQuery1,
+			false,
+			IgnoredBlocks,
+			EDrawDebugTrace::ForOneFrame,
+			BoxHits,
+			true
+			);
+	}
+	else
+	{
+		FVector StartLoc(ForceInitToZero), EndLoc(ForceInitToZero);
+		CalculateStartEndLocation(WithoutHitDistance, StartLoc, EndLoc);
+		M_CurrentBlock->SetActorLocation(EndLoc);
+	}
 }

@@ -31,7 +31,7 @@ protected:
 	float MaxTraceDistance = 3000.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Trace)
-	float WithoutHitDistance = 500.0f;
+	float WithoutHitDistance = 750.0f;
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
@@ -52,4 +52,5 @@ private:
 	void DrawTrace(TArray<AActor*> IgnoredActors, FHitResult& HitResult, float Distance);
 	bool CreateBlock(const FHitResult& HitResult);
 	void CalculateStartEndLocation(float Distance, FVector& StartLoc, FVector& EndLoc);
+	void SetBlockLocation(const FHitResult& HitResult);
 };
