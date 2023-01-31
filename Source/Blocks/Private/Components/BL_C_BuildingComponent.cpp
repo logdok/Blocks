@@ -20,8 +20,14 @@ void UBL_C_BuildingComponent::StartAction()
 {
 	if (!IsValid(M_Owner)) return;
 
-	M_isStartAction = true;
-
+	if (M_CurrentAction == EActionType::Building)
+	{
+		M_isStartBuilding = true;
+	}
+	if (M_CurrentAction == EActionType::Destroy)
+	{
+		M_isStartDestroy = true;
+	}
 	/*
 	GetWorld()->LineTraceSingleByChannel(HitResult,
 	                                     StartLoc,
@@ -36,7 +42,15 @@ void UBL_C_BuildingComponent::StartAction()
 
 void UBL_C_BuildingComponent::EndAction()
 {
-	M_isStartAction = false;
+	if (M_CurrentAction == EActionType::Building)
+	{
+		M_isStartBuilding = false;
+		M_isStartPreview = false;
+	}
+	if (M_CurrentAction == EActionType::Destroy)
+	{
+		M_isStartDestroy = true;
+	}
 	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("--- Call End Action"));
 }
 
@@ -53,47 +67,63 @@ void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if(M_isStartAction && M_CurrentAction == EActionType::Building)
+	if (M_isStartBuilding)
 	{
-		FHitResult HitResult;
-		DrawTrace(HitResult);
+		TArray<AActor*> IgnoredActors;
+		IgnoredActors.Add(M_Owner);
+		IgnoredActors.AddUnique(M_CurrentBlock);
 
-		if(HitResult.bBlockingHit)
+		FHitResult HitResult;
+		DrawTrace(IgnoredActors, HitResult, MaxTraceDistance);
+
+		if (CreateBlock(HitResult))
 		{
-			if(!IsValid(M_CurrentBlock) && BigBlockClass)
-			{
-				FTransform Transform;
-				Transform.SetLocation(HitResult.Location);
-				M_CurrentBlock = GetWorld()->SpawnActor<ABL_C_BaseBlock>(BigBlockClass, Transform);
-			}
-			else if(IsValid(M_CurrentBlock))
+			if (HitResult.bBlockingHit)
 			{
 				M_CurrentBlock->SetActorLocation(HitResult.Location);
+			}
+			else
+			{
+				FVector StartLoc(ForceInitToZero), EndLoc(ForceInitToZero);
+				CalculateStartEndLocation(WithoutHitDistance, StartLoc, EndLoc);
+				M_CurrentBlock->SetActorLocation(EndLoc);
 			}
 		}
 	}
 }
 
-void UBL_C_BuildingComponent::DrawTrace(FHitResult& HitResult)
+void UBL_C_BuildingComponent::DrawTrace(TArray<AActor*> IgnoredActors, FHitResult& HitResult, float Distance)
 {
-	TArray<AActor*> IgnoredActors;
-	IgnoredActors.Add(M_Owner);
-	IgnoredActors.AddUnique(M_CurrentBlock);
-
-	const FVector StartLoc = M_Owner->BL_LightSphere->GetComponentLocation();
-
-	FVector EndLoc = StartLoc + M_Owner->FindComponentByClass<UCameraComponent>()->GetForwardVector() * 5000.0f;
+	FVector StartLoc(ForceInitToZero), EndLoc(ForceInitToZero);
+	CalculateStartEndLocation(Distance, StartLoc, EndLoc);
 
 	UKismetSystemLibrary::LineTraceSingle(GetWorld(),
-		StartLoc,
-		EndLoc,
-		TraceTypeQuery1,
-		false,
-		IgnoredActors,
-		EDrawDebugTrace::ForOneFrame,
-		HitResult,
-		true,
-		FLinearColor::Red,
-		FLinearColor::Green,
-		0.5f);
+	                                      StartLoc,
+	                                      EndLoc,
+	                                      TraceTypeQuery1,
+	                                      false,
+	                                      IgnoredActors,
+	                                      EDrawDebugTrace::ForOneFrame,
+	                                      HitResult,
+	                                      true,
+	                                      FLinearColor::Red,
+	                                      FLinearColor::Green,
+	                                      0.5f);
+}
+
+bool UBL_C_BuildingComponent::CreateBlock(const FHitResult& HitResult)
+{
+	if (M_isStartPreview) return true;
+	if (!IsValid(BigBlockClass)) return false;
+
+	FTransform Transform;
+	Transform.SetLocation(HitResult.Location);
+	M_CurrentBlock = GetWorld()->SpawnActor<ABL_C_BaseBlock>(BigBlockClass, Transform);
+	return M_isStartPreview = IsValid(M_CurrentBlock);
+}
+
+void UBL_C_BuildingComponent::CalculateStartEndLocation(float Distance, FVector& StartLoc, FVector& EndLoc)
+{
+	StartLoc = M_Owner->BL_LightSphere->GetComponentLocation();
+	EndLoc = StartLoc + M_Owner->FindComponentByClass<UCameraComponent>()->GetForwardVector() * Distance;
 }
