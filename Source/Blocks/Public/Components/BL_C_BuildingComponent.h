@@ -38,6 +38,10 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	bool M_isStartBuilding;
+	bool M_isStartDestroy;
+	bool M_isStartPreview;
+
 	UPROPERTY()
 	ABL_C_Character* M_Owner;
 
@@ -45,9 +49,8 @@ private:
 	ABL_C_BaseBlock* M_CurrentBlock;
 
 	EActionType M_CurrentAction;
-	bool M_isStartBuilding;
-	bool M_isStartDestroy;
-	bool M_isStartPreview;
+
+	FVector M_BlockLoc;
 
 	void DrawTrace(TArray<AActor*> IgnoredActors, FHitResult& HitResult, float Distance);
 	bool CreateBlock(const FHitResult& HitResult);

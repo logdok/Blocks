@@ -123,14 +123,14 @@ void UBL_C_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 {
 	if (HitResult.bBlockingHit)
 	{
-		M_CurrentBlock->SetActorLocation(HitResult.Location.GridSnap(50.0f) + HitResult.Normal * 50.0f);
-
+		M_BlockLoc = HitResult.Location.GridSnap(50.0f) + HitResult.Normal * 50.0f;
+		
 		const TArray<AActor*> IgnoredBlocks = {M_Owner, M_CurrentBlock};
 		TArray<FHitResult> BoxHits;
 		
 		UKismetSystemLibrary::BoxTraceMulti(GetWorld(),
-			M_CurrentBlock->GetActorLocation(),
-			M_CurrentBlock->GetActorLocation(),
+			M_BlockLoc,
+			M_BlockLoc,
 			FVector(50.0f),
 			FRotator::ZeroRotator,
 			TraceTypeQuery1,
@@ -140,6 +140,13 @@ void UBL_C_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 			BoxHits,
 			true
 			);
+
+		for(const auto& OneHit : BoxHits)
+		{
+			M_BlockLoc += OneHit.Normal;
+			UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("Hit: %s"), *OneHit.Normal.ToString());
+		}
+		M_CurrentBlock->SetActorLocation(M_BlockLoc);
 	}
 	else
 	{
