@@ -7,6 +7,7 @@
 
 class UInputComponent;
 class UCameraComponent;
+class UBL_C_BuildingComponent;
 
 UCLASS()
 class BLOCKS_API ABL_C_Character : public ACharacter
@@ -16,11 +17,11 @@ class BLOCKS_API ABL_C_Character : public ACharacter
 public:
 	ABL_C_Character();
 
+	void StartAction();
+	void EndAction();
+
 protected:
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Camera, meta = (AllowPrivateAccess="true"))
 	UCameraComponent* BL_CameraComponent;
@@ -28,14 +29,29 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	USkeletalMeshComponent* BL_FirstPersonMesh;
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
+	USkeletalMeshComponent* BL_FirstPersonGun;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
+	UStaticMeshComponent* BL_LightSphere;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
+	UBL_C_BuildingComponent* BL_BuildingComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess="true"))
 	class UInputMappingContext* DefaultMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* LookAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* PrimaryAction;
 
 protected:
 	void Move(const FInputActionValue& Value);
