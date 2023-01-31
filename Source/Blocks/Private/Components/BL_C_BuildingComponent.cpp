@@ -3,6 +3,10 @@
 
 #include "Components/BL_C_BuildingComponent.h"
 
+#include "Camera/CameraComponent.h"
+#include "Character/BL_C_Character.h"
+#include "Kismet/KismetSystemLibrary.h"
+
 DEFINE_LOG_CATEGORY_STATIC(LogBL_C_BuilderComponent, All, All);
 
 UBL_C_BuildingComponent::UBL_C_BuildingComponent()
@@ -12,21 +16,67 @@ UBL_C_BuildingComponent::UBL_C_BuildingComponent()
 
 void UBL_C_BuildingComponent::StartAction()
 {
+	if (!IsValid(M_Owner)) return;
+
+	M_isStartAction = true;
+
+	/*
+	GetWorld()->LineTraceSingleByChannel(HitResult,
+	                                     StartLoc,
+	                                     EndLoc,
+	                                     ECC_Visibility,
+	                                     FCollisionQueryParams::DefaultQueryParam,
+	                                     FCollisionResponseParams::DefaultResponseParam);
+	                                     */
+
 	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("--- Call Start Action"));
 }
 
 void UBL_C_BuildingComponent::EndAction()
 {
+	M_isStartAction = false;
 	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("--- Call End Action"));
 }
 
 void UBL_C_BuildingComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	M_Owner = Cast<ABL_C_Character>(GetOwner());
+	M_CurrentAction = EActionType::Building;
 }
 
 void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                             FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if(M_isStartAction && M_CurrentAction == EActionType::Building)
+	{
+		FHitResult HitResult;
+		DrawTrace(HitResult);
+	}
+}
+
+void UBL_C_BuildingComponent::DrawTrace(FHitResult& HitResult)
+{
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(M_Owner);
+
+	const FVector StartLoc = M_Owner->BL_LightSphere->GetComponentLocation();
+
+	FVector EndLoc = StartLoc + M_Owner->FindComponentByClass<UCameraComponent>()->GetForwardVector() * 5000.0f;
+
+	UKismetSystemLibrary::LineTraceSingle(GetWorld(),
+		StartLoc,
+		EndLoc,
+		TraceTypeQuery1,
+		false,
+		IgnoredActors,
+		EDrawDebugTrace::ForOneFrame,
+		HitResult,
+		true,
+		FLinearColor::Red,
+		FLinearColor::Green,
+		0.5f);
 }

@@ -20,6 +20,9 @@ public:
 	void StartAction();
 	void EndAction();
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
+	UStaticMeshComponent* BL_LightSphere;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -31,9 +34,6 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	USkeletalMeshComponent* BL_FirstPersonGun;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
-	UStaticMeshComponent* BL_LightSphere;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	UBL_C_BuildingComponent* BL_BuildingComponent;

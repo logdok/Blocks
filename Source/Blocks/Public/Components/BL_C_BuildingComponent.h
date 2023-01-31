@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Blocks/BL_Variables.h"
 #include "BL_C_BuildingComponent.generated.h"
 
+class ABL_C_Character;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BLOCKS_API UBL_C_BuildingComponent : public UActorComponent
@@ -24,4 +26,14 @@ protected:
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+
+private:
+	UPROPERTY()
+	ABL_C_Character* M_Owner;
+
+	EActionType M_CurrentAction;
+
+	bool M_isStartAction;
+
+	void DrawTrace(FHitResult& HitResult);
 };
