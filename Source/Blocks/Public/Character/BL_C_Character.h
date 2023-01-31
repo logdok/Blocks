@@ -29,6 +29,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Camera, meta = (AllowPrivateAccess="true"))
 	UCameraComponent* BL_CameraComponent;
 
+	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	USkeletalMeshComponent* BL_FirstPersonMesh;
 
@@ -38,6 +39,7 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	UBL_C_BuildingComponent* BL_BuildingComponent;
 
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess="true"))
 	class UInputMappingContext* DefaultMappingContext;
 

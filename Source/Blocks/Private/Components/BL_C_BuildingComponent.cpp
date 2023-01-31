@@ -6,6 +6,8 @@
 #include "Camera/CameraComponent.h"
 #include "Character/BL_C_Character.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameBlocks/BL_C_BaseBlock.h"
+
 
 DEFINE_LOG_CATEGORY_STATIC(LogBL_C_BuilderComponent, All, All);
 
@@ -55,6 +57,20 @@ void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	{
 		FHitResult HitResult;
 		DrawTrace(HitResult);
+
+		if(HitResult.bBlockingHit)
+		{
+			if(!IsValid(M_CurrentBlock) && BigBlockClass)
+			{
+				FTransform Transform;
+				Transform.SetLocation(HitResult.Location);
+				M_CurrentBlock = GetWorld()->SpawnActor<ABL_C_BaseBlock>(BigBlockClass, Transform);
+			}
+			else if(IsValid(M_CurrentBlock))
+			{
+				M_CurrentBlock->SetActorLocation(HitResult.Location);
+			}
+		}
 	}
 }
 
@@ -62,6 +78,7 @@ void UBL_C_BuildingComponent::DrawTrace(FHitResult& HitResult)
 {
 	TArray<AActor*> IgnoredActors;
 	IgnoredActors.Add(M_Owner);
+	IgnoredActors.AddUnique(M_CurrentBlock);
 
 	const FVector StartLoc = M_Owner->BL_LightSphere->GetComponentLocation();
 

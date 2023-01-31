@@ -6,6 +6,9 @@
 ABL_C_BaseBlock::ABL_C_BaseBlock()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	BL_MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("BL_MeshComponent");
+	SetRootComponent(BL_MeshComponent);
 }
 
 void ABL_C_BaseBlock::BeginPlay()

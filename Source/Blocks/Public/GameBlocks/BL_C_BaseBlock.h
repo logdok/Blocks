@@ -14,6 +14,9 @@ class BLOCKS_API ABL_C_BaseBlock : public AActor
 public:
 	ABL_C_BaseBlock();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Components)
+	UStaticMeshComponent* BL_MeshComponent;
+
 protected:
 	virtual void BeginPlay() override;
 
