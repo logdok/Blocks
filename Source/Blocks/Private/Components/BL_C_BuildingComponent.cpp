@@ -36,8 +36,6 @@ void UBL_C_BuildingComponent::StartAction()
 	                                     FCollisionQueryParams::DefaultQueryParam,
 	                                     FCollisionResponseParams::DefaultResponseParam);
 	                                     */
-
-	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("--- Call Start Action"));
 }
 
 void UBL_C_BuildingComponent::EndAction()
@@ -52,12 +50,11 @@ void UBL_C_BuildingComponent::EndAction()
 	{
 		M_isStartDestroy = true;
 	}
-	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("--- Call End Action"));
 }
 
 void UBL_C_BuildingComponent::ChangeMaterial(float Value)
 {
-	M_CurrentMaterialIndex = FMath::Clamp(Value, -1.0f, 1.0f);
+	M_CurrentMaterialIndex += FMath::Clamp(Value, -1.0f, 1.0f);
 
 	if (BlockMaterialPairs.Num() == M_CurrentMaterialIndex)
 	{
@@ -67,9 +64,12 @@ void UBL_C_BuildingComponent::ChangeMaterial(float Value)
 	{
 		M_CurrentMaterialIndex = BlockMaterialPairs.Num() - 1;
 	}
+	if(M_isStartPreview)
+	{
+		CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMaterialIndex].Preview);
+	}
 
-	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("-------- ------- Current Material Index: %d"),
-	       M_CurrentMaterialIndex);
+	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("-------- Current Material Index: %i"), M_CurrentMaterialIndex);
 }
 
 void UBL_C_BuildingComponent::BeginPlay()
@@ -98,7 +98,6 @@ void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 		if (CreateBlock(HitResult))
 		{
 			SetBlockLocation(HitResult);
-			CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMaterialIndex].Preview);
 		}
 	}
 }
@@ -172,7 +171,7 @@ void UBL_C_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 	for (const auto& OneHit : BoxHits)
 	{
 		M_BlockLoc += OneHit.Normal;
-		UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("Hit: %s"), *OneHit.Normal.ToString());
+		//UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("Hit: %s"), *OneHit.Normal.ToString());
 	}
 	M_CurrentBlock->SetActorLocation(M_BlockLoc);
 }
@@ -183,5 +182,6 @@ void UBL_C_BuildingComponent::CreateAndSetMaterial(UMaterialInterface* ParentMat
 	{
 		M_CurrentMat = UMaterialInstanceDynamic::Create(ParentMaterial, GetWorld());
 		M_CurrentBlock->BL_MeshComponent->SetMaterial(0, M_CurrentMat);
+		M_DeltaIndex = M_CurrentMaterialIndex;
 	}
 }

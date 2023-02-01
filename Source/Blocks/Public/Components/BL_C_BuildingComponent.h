@@ -59,6 +59,8 @@ private:
 
 	int32 M_CurrentMaterialIndex;
 
+	int32 M_DeltaIndex;
+
 	FVector M_BlockLoc;
 
 	void DrawTrace(TArray<AActor*> IgnoredActors, FHitResult& HitResult, float Distance);
