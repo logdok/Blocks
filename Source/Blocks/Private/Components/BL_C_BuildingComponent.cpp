@@ -45,6 +45,11 @@ void UBL_C_BuildingComponent::EndAction()
 		M_isStartBuilding = false;
 		M_isStartPreview = false;
 		CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMaterialIndex].Base);
+		if(IsValid(M_CurrentMat) && IsValid(M_CurrentBlock))
+		{
+			M_CurrentMat->SetVectorParameterValue(FName("Emit Color"), BlockMaterialPairs[M_CurrentMaterialIndex].EmitColor);
+			M_CurrentBlock->onEndBuilding();
+		}
 	}
 	if (M_CurrentAction == EActionType::Destroy)
 	{
