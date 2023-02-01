@@ -91,6 +91,9 @@ void ABL_C_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABL_C_Character::Look);
+
+		//ChangeMaterial
+		EnhancedInputComponent->BindAction(ChangeMaterialAction, ETriggerEvent::Triggered, this, &ABL_C_Character::ChangeMaterial);
 	}
 }
 
@@ -118,4 +121,13 @@ void ABL_C_Character::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void ABL_C_Character::ChangeMaterial(const FInputActionValue& Value)
+{
+	float ScrollValue = Value.Get<float>();
+
+	if(FMath::IsNearlyZero(ScrollValue)) return;
+
+	BL_BuildingComponent->ChangeMaterial(ScrollValue);
 }

@@ -20,6 +20,7 @@ public:
 
 	void StartAction();
 	void EndAction();
+	void ChangeMaterial(float Value);
 
 protected:
 	virtual void BeginPlay() override;
@@ -52,12 +53,11 @@ private:
 	ABL_C_BaseBlock* M_CurrentBlock;
 
 	UPROPERTY()
-	UMaterialInstanceDynamic* M_CurrentPreviewMat;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* M_CurrentBaseMat;
+	UMaterialInstanceDynamic* M_CurrentMat;
 
 	EActionType M_CurrentAction;
+
+	int32 M_CurrentMaterialIndex;
 
 	FVector M_BlockLoc;
 
@@ -65,4 +65,5 @@ private:
 	bool CreateBlock(const FHitResult& HitResult);
 	void CalculateStartEndLocation(float Distance, FVector& StartLoc, FVector& EndLoc);
 	void SetBlockLocation(const FHitResult& HitResult);
+	void CreateAndSetMaterial(UMaterialInterface* ParentMaterial);
 };

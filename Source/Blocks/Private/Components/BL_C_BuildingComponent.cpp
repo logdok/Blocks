@@ -46,17 +46,7 @@ void UBL_C_BuildingComponent::EndAction()
 	{
 		M_isStartBuilding = false;
 		M_isStartPreview = false;
-
-		if(IsValid(M_CurrentBlock) && IsValid(GetWorld()) && IsValid(BlockMaterialPairs[0].Base))
-		{
-			if(!M_CurrentBaseMat)
-			{
-				M_CurrentBaseMat = UMaterialInstanceDynamic::Create(BlockMaterialPairs[0].Base, GetWorld());
-			}
-
-			M_CurrentBlock->BL_MeshComponent->SetMaterial(0, M_CurrentBaseMat);
-		}
-
+		CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMaterialIndex].Base);
 	}
 	if (M_CurrentAction == EActionType::Destroy)
 	{
@@ -65,12 +55,30 @@ void UBL_C_BuildingComponent::EndAction()
 	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("--- Call End Action"));
 }
 
+void UBL_C_BuildingComponent::ChangeMaterial(float Value)
+{
+	M_CurrentMaterialIndex = FMath::Clamp(Value, -1.0f, 1.0f);
+
+	if (BlockMaterialPairs.Num() == M_CurrentMaterialIndex)
+	{
+		M_CurrentMaterialIndex = 0;
+	}
+	else if (-1 == M_CurrentMaterialIndex)
+	{
+		M_CurrentMaterialIndex = BlockMaterialPairs.Num() - 1;
+	}
+
+	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("-------- ------- Current Material Index: %d"),
+	       M_CurrentMaterialIndex);
+}
+
 void UBL_C_BuildingComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	M_Owner = Cast<ABL_C_Character>(GetOwner());
 	M_CurrentAction = EActionType::Building;
+	M_CurrentMaterialIndex = 0;
 }
 
 void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -90,6 +98,7 @@ void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 		if (CreateBlock(HitResult))
 		{
 			SetBlockLocation(HitResult);
+			CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMaterialIndex].Preview);
 		}
 	}
 }
@@ -105,7 +114,7 @@ void UBL_C_BuildingComponent::DrawTrace(TArray<AActor*> IgnoredActors, FHitResul
 	                                      TraceTypeQuery1,
 	                                      false,
 	                                      IgnoredActors,
-	                                      EDrawDebugTrace::ForOneFrame,
+	                                      EDrawDebugTrace::None,
 	                                      HitResult,
 	                                      true,
 	                                      FLinearColor::Red,
@@ -121,16 +130,7 @@ bool UBL_C_BuildingComponent::CreateBlock(const FHitResult& HitResult)
 	FTransform Transform;
 	Transform.SetLocation(HitResult.Location);
 	M_CurrentBlock = GetWorld()->SpawnActor<ABL_C_BaseBlock>(BigBlockClass, Transform);
-
-	if(IsValid(M_CurrentBlock) && IsValid(GetWorld()) && IsValid(BlockMaterialPairs[0].Preview))
-	{
-		if(!M_CurrentPreviewMat)
-		{
-			M_CurrentPreviewMat = UMaterialInstanceDynamic::Create(BlockMaterialPairs[0].Preview, GetWorld());
-		}
-
-		M_CurrentBlock->BL_MeshComponent->SetMaterial(0, M_CurrentPreviewMat);
-	}
+	CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMaterialIndex].Preview);
 	return M_isStartPreview = IsValid(M_CurrentBlock);
 }
 
@@ -155,24 +155,33 @@ void UBL_C_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 
 	const TArray<AActor*> IgnoredBlocks = {M_Owner, M_CurrentBlock};
 	TArray<FHitResult> BoxHits;
-		
-	UKismetSystemLibrary::BoxTraceMulti(GetWorld(),
-		M_BlockLoc,
-		M_BlockLoc,
-		FVector(50.0f),
-		FRotator::ZeroRotator,
-		TraceTypeQuery1,
-		false,
-		IgnoredBlocks,
-		EDrawDebugTrace::ForOneFrame,
-		BoxHits,
-		true
-		);
 
-	for(const auto& OneHit : BoxHits)
+	UKismetSystemLibrary::BoxTraceMulti(GetWorld(),
+	                                    M_BlockLoc,
+	                                    M_BlockLoc,
+	                                    FVector(50.0f),
+	                                    FRotator::ZeroRotator,
+	                                    TraceTypeQuery1,
+	                                    false,
+	                                    IgnoredBlocks,
+	                                    EDrawDebugTrace::None,
+	                                    BoxHits,
+	                                    true
+	);
+
+	for (const auto& OneHit : BoxHits)
 	{
 		M_BlockLoc += OneHit.Normal;
 		UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("Hit: %s"), *OneHit.Normal.ToString());
 	}
 	M_CurrentBlock->SetActorLocation(M_BlockLoc);
+}
+
+void UBL_C_BuildingComponent::CreateAndSetMaterial(UMaterialInterface* ParentMaterial)
+{
+	if (IsValid(M_CurrentBlock) && IsValid(GetWorld()) && IsValid(ParentMaterial))
+	{
+		M_CurrentMat = UMaterialInstanceDynamic::Create(ParentMaterial, GetWorld());
+		M_CurrentBlock->BL_MeshComponent->SetMaterial(0, M_CurrentMat);
+	}
 }

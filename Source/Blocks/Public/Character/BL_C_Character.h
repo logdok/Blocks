@@ -17,9 +17,6 @@ class BLOCKS_API ABL_C_Character : public ACharacter
 public:
 	ABL_C_Character();
 
-	void StartAction();
-	void EndAction();
-
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	UStaticMeshComponent* BL_LightSphere;
 
@@ -29,17 +26,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Camera, meta = (AllowPrivateAccess="true"))
 	UCameraComponent* BL_CameraComponent;
 
-	
+
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	USkeletalMeshComponent* BL_FirstPersonMesh;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
 	USkeletalMeshComponent* BL_FirstPersonGun;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Mesh)
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category=Components)
 	UBL_C_BuildingComponent* BL_BuildingComponent;
 
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess="true"))
 	class UInputMappingContext* DefaultMappingContext;
 
@@ -55,11 +53,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* PrimaryAction;
 
-protected:
-	void Move(const FInputActionValue& Value);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* ChangeMaterialAction;
 
-	void Look(const FInputActionValue& Value);
-	
 public:
 	virtual void Tick(float DeltaTime) override;
 
@@ -68,4 +64,13 @@ public:
 	USkeletalMeshComponent* GetBL_FirstPersonMesh() const { return BL_FirstPersonMesh; }
 
 	UCameraComponent* GetBL_CameraComponent() const { return BL_CameraComponent; }
+
+private:
+	void StartAction();
+	void EndAction();
+	
+	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+
+	void ChangeMaterial(const FInputActionValue& Value);
 };
