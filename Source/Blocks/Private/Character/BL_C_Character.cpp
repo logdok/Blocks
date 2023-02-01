@@ -41,6 +41,11 @@ void ABL_C_Character::EndAction()
 	BL_BuildingComponent->EndAction();
 }
 
+void ABL_C_Character::SwitchAction()
+{
+	BL_BuildingComponent->SwitchAction();
+}
+
 void ABL_C_Character::BeginPlay()
 {
 	Super::BeginPlay();
@@ -82,7 +87,7 @@ void ABL_C_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-		//PrimaryAction
+		//Primary Action
 		EnhancedInputComponent->BindAction(PrimaryAction, ETriggerEvent::Started, this, &ABL_C_Character::StartAction);
 		EnhancedInputComponent->BindAction(PrimaryAction, ETriggerEvent::Completed, this, &ABL_C_Character::EndAction);
 
@@ -92,8 +97,11 @@ void ABL_C_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABL_C_Character::Look);
 
-		//ChangeMaterial
+		//Change Material
 		EnhancedInputComponent->BindAction(ChangeMaterialAction, ETriggerEvent::Triggered, this, &ABL_C_Character::ChangeMaterial);
+
+		//Switch Material
+		EnhancedInputComponent->BindAction(SwitchMaterialAction, ETriggerEvent::Triggered, this, &ABL_C_Character::SwitchAction);
 	}
 }
 

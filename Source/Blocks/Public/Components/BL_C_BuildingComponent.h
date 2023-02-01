@@ -21,6 +21,7 @@ public:
 	void StartAction();
 	void EndAction();
 	void ChangeMaterial(float Value);
+	void SwitchAction();
 
 protected:
 	virtual void BeginPlay() override;
@@ -54,6 +55,9 @@ private:
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* M_CurrentMat;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* M_LightSphereMat;
 
 	EActionType M_CurrentAction;
 

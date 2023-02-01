@@ -56,6 +56,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* ChangeMaterialAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	class UInputAction* SwitchMaterialAction;
+
 public:
 	virtual void Tick(float DeltaTime) override;
 
@@ -68,6 +71,7 @@ public:
 private:
 	void StartAction();
 	void EndAction();
+	void SwitchAction();
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);

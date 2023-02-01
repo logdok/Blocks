@@ -48,7 +48,7 @@ void UBL_C_BuildingComponent::EndAction()
 	}
 	if (M_CurrentAction == EActionType::Destroy)
 	{
-		M_isStartDestroy = true;
+		M_isStartDestroy = false;
 	}
 }
 
@@ -72,6 +72,21 @@ void UBL_C_BuildingComponent::ChangeMaterial(float Value)
 	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("-------- Current Material Index: %i"), M_CurrentMaterialIndex);
 }
 
+void UBL_C_BuildingComponent::SwitchAction()
+{
+	if(EActionType::Destroy == M_CurrentAction || EActionType::None == M_CurrentAction)
+	{
+		M_CurrentAction = EActionType::Building;
+		M_LightSphereMat->SetVectorParameterValue(FName("Color"), FLinearColor::Green);
+	}
+	else
+	{
+		M_CurrentAction = EActionType::Destroy;
+		M_LightSphereMat->SetVectorParameterValue(FName("Color"), FLinearColor::Red);
+	}
+	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("Switch action..."));
+}
+
 void UBL_C_BuildingComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -79,6 +94,17 @@ void UBL_C_BuildingComponent::BeginPlay()
 	M_Owner = Cast<ABL_C_Character>(GetOwner());
 	M_CurrentAction = EActionType::Building;
 	M_CurrentMaterialIndex = 0;
+	if(IsValid(M_Owner) &&
+		IsValid(M_Owner->BL_LightSphere) &&
+		IsValid(M_Owner->BL_LightSphere->GetMaterial(0)) &&
+		IsValid(GetWorld()))
+	{
+		M_LightSphereMat = UMaterialInstanceDynamic::Create(M_Owner->BL_LightSphere->GetMaterial(0), GetWorld());
+		if(M_LightSphereMat)
+		{
+			M_Owner->BL_LightSphere->SetMaterial(0, M_LightSphereMat);
+		} 
+	}
 }
 
 void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -98,6 +124,20 @@ void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 		if (CreateBlock(HitResult))
 		{
 			SetBlockLocation(HitResult);
+		}
+	}
+	else if (M_isStartDestroy)
+	{
+		TArray<AActor*> IgnoredActors;
+		IgnoredActors.Add(M_Owner);
+
+		FHitResult HitResult;
+		DrawTrace(IgnoredActors, HitResult, MaxTraceDistance);
+		if(HitResult.bBlockingHit &&
+			IsValid(HitResult.GetActor()) &&
+			HitResult.GetActor()->IsA<ABL_C_BaseBlock>())
+		{
+			HitResult.GetActor()->Destroy();
 		}
 	}
 }
