@@ -15,21 +15,24 @@ public:
 	ABL_C_BaseBlock();
 
 	void onEndBuilding();
+	
+	void OnStartDestroy();
+	void OnResetDestroy();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Components)
 	UStaticMeshComponent* BL_MeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Emit)
-	float FadeTime = 1.0f;
+	float FadeTime = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Emit)
-	float FadePowerMult = 10.0f;
+	float FadePowerMult = 8.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Emit)
 	float RiseTime = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Emit)
-	float RisePowerMult = 10.0f;
+	float RisePowerMult = 5.0f;
 
 protected:
 	virtual void BeginPlay() override;
@@ -40,6 +43,9 @@ public:
 private:
 	bool M_StartFadeEmit;
 	float M_FXEmitPower;
+
+	bool M_StartRiseEmit;
+	bool M_ResetRiseEmit;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* M_BlockDynMat;

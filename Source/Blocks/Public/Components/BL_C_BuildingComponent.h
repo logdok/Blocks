@@ -54,6 +54,9 @@ private:
 	ABL_C_BaseBlock* M_CurrentBlock;
 
 	UPROPERTY()
+	AActor* M_HitActor;
+
+	UPROPERTY()
 	UMaterialInstanceDynamic* M_CurrentMat;
 
 	UPROPERTY()

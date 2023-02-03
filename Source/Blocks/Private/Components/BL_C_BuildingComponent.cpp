@@ -54,6 +54,8 @@ void UBL_C_BuildingComponent::EndAction()
 	if (M_CurrentAction == EActionType::Destroy)
 	{
 		M_isStartDestroy = false;
+		// notify previous actor about stop destroy 
+		Cast<ABL_C_BaseBlock>(M_HitActor)->OnResetDestroy();
 	}
 }
 
@@ -139,10 +141,19 @@ void UBL_C_BuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 		FHitResult HitResult;
 		DrawTrace(IgnoredActors, HitResult, MaxTraceDistance);
 		if(HitResult.bBlockingHit &&
-			IsValid(HitResult.GetActor()) &&
-			HitResult.GetActor()->IsA<ABL_C_BaseBlock>())
+			IsValid(HitResult.GetActor()))
 		{
-			HitResult.GetActor()->Destroy();
+			if(HitResult.GetActor()->IsA<ABL_C_BaseBlock>())
+			{
+				Cast<ABL_C_BaseBlock>(HitResult.GetActor())->OnStartDestroy();
+			}
+
+			if(IsValid(M_HitActor) && M_HitActor->GetName() != HitResult.GetActor()->GetName())
+			{
+				// notify previous actor about stop destroy 
+				Cast<ABL_C_BaseBlock>(M_HitActor)->OnResetDestroy();
+			}
+			M_HitActor = HitResult.GetActor();
 		}
 	}
 }

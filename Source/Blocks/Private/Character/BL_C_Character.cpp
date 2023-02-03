@@ -28,7 +28,7 @@ ABL_C_Character::ABL_C_Character()
 
 	BL_BuildingComponent = CreateDefaultSubobject<UBL_C_BuildingComponent>("BL_BuildingComponent");
 
-	UE_LOG(LogBL_C_Character, Display, TEXT("---------------------- Sydch, End call Character constructor"));
+	UE_LOG(LogBL_C_Character, Display, TEXT("Call Character constructor"));
 }
 
 void ABL_C_Character::StartAction()
