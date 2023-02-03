@@ -79,6 +79,26 @@ void UBL_C_BuildingComponent::ChangeMaterial(float Value)
 	UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("-------- Current Material Index: %i"), M_CurrentMaterialIndex);
 }
 
+void UBL_C_BuildingComponent::ChangeBlock()
+{
+	++M_CurrentBlockIndex;
+
+	if (BlockClasses.Num() == M_CurrentBlockIndex)
+	{
+		M_CurrentBlockIndex = 0;
+	}
+	else if (-1 == M_CurrentBlockIndex)
+	{
+		M_CurrentBlockIndex = BlockClasses.Num() - 1;
+	}
+	if(M_isStartPreview)
+	{
+		M_CurrentBlock->Destroy();
+		M_isStartPreview = false;
+		M_isStartBuilding = true; // need check
+	}
+}
+
 void UBL_C_BuildingComponent::SwitchAction()
 {
 	if(EActionType::Destroy == M_CurrentAction || EActionType::None == M_CurrentAction)
@@ -180,11 +200,19 @@ void UBL_C_BuildingComponent::DrawTrace(TArray<AActor*> IgnoredActors, FHitResul
 bool UBL_C_BuildingComponent::CreateBlock(const FHitResult& HitResult)
 {
 	if (M_isStartPreview) return true;
-	if (!IsValid(BigBlockClass)) return false;
+	if (!IsValid(BlockClasses[M_CurrentBlockIndex])) return false;
 
 	FTransform Transform;
 	Transform.SetLocation(HitResult.Location);
-	M_CurrentBlock = GetWorld()->SpawnActor<ABL_C_BaseBlock>(BigBlockClass, Transform);
+	M_CurrentBlock = GetWorld()->SpawnActor<ABL_C_BaseBlock>(BlockClasses[M_CurrentBlockIndex], Transform);
+	if(IsValid(M_CurrentBlock))
+	{
+		FVector Origin(ForceInitToZero), Extend(ForceInitToZero);
+		
+		M_CurrentBlock->GetActorBounds(false, Origin, Extend);
+		M_CurrentBlockExtend = Extend.X;
+	}
+	
 	CreateAndSetMaterial(BlockMaterialPairs[M_CurrentMaterialIndex].Preview);
 	return M_isStartPreview = IsValid(M_CurrentBlock);
 }
@@ -199,13 +227,13 @@ void UBL_C_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 {
 	if (HitResult.bBlockingHit)
 	{
-		M_BlockLoc = HitResult.Location.GridSnap(50.0f) + HitResult.Normal * 50.0f;
+		M_BlockLoc = HitResult.Location.GridSnap(M_CurrentBlockExtend) + HitResult.Normal * M_CurrentBlockExtend;
 	}
 	else
 	{
 		FVector StartLoc(ForceInitToZero), EndLoc(ForceInitToZero);
 		CalculateStartEndLocation(WithoutHitDistance, StartLoc, EndLoc);
-		M_BlockLoc = EndLoc.GridSnap(50.0f);
+		M_BlockLoc = EndLoc.GridSnap(M_CurrentBlockExtend);
 	}
 
 	const TArray<AActor*> IgnoredBlocks = {M_Owner, M_CurrentBlock};
@@ -214,7 +242,7 @@ void UBL_C_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 	UKismetSystemLibrary::BoxTraceMulti(GetWorld(),
 	                                    M_BlockLoc,
 	                                    M_BlockLoc,
-	                                    FVector(50.0f),
+	                                    FVector(M_CurrentBlockExtend),
 	                                    FRotator::ZeroRotator,
 	                                    TraceTypeQuery1,
 	                                    false,
@@ -229,7 +257,11 @@ void UBL_C_BuildingComponent::SetBlockLocation(const FHitResult& HitResult)
 		M_BlockLoc += OneHit.Normal;
 		//UE_LOG(LogBL_C_BuilderComponent, Display, TEXT("Hit: %s"), *OneHit.Normal.ToString());
 	}
-	M_CurrentBlock->SetActorLocation(M_BlockLoc);
+
+	if(IsValid(M_CurrentBlock))
+	{
+		M_CurrentBlock->SetActorLocation(M_BlockLoc);
+	}
 }
 
 void UBL_C_BuildingComponent::CreateAndSetMaterial(UMaterialInterface* ParentMaterial)

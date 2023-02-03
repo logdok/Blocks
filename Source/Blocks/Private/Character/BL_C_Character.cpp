@@ -46,6 +46,12 @@ void ABL_C_Character::SwitchAction()
 	BL_BuildingComponent->SwitchAction();
 }
 
+void ABL_C_Character::ChangeAction()
+{
+	BL_BuildingComponent->ChangeBlock();
+	//UE_LOG(LogBL_C_Character, Display, TEXT("Call change action"))
+}
+
 void ABL_C_Character::BeginPlay()
 {
 	Super::BeginPlay();
@@ -102,6 +108,9 @@ void ABL_C_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 		//Switch Material
 		EnhancedInputComponent->BindAction(SwitchMaterialAction, ETriggerEvent::Triggered, this, &ABL_C_Character::SwitchAction);
+
+		// Change Action
+		EnhancedInputComponent->BindAction(ChangeBlockAction, ETriggerEvent::Triggered, this, &ABL_C_Character::ChangeAction);
 	}
 }
 
